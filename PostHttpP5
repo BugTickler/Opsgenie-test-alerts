@@ -1,0 +1,39 @@
+# Opsgenie API
+$apiKey = "API KEY" #See playbook
+$teamID = "Team ID" #See playbook
+
+# Define Opsgenie API endpoint
+$apiEndpoint = "https://api.opsgenie.com/v2/alerts"
+
+# Define alert data in JSON format
+$alertData = @"
+{
+    "message": "test",
+    "alias": "test",
+    "description": "Test alert - ignore",
+    "responders": [
+        {"id": '$teamID', "type": "team"}
+    ],
+    "visibleTo": [
+        {"id": '$teamID', "type": "team"}
+    ],
+    "actions": ["Restart", "AnExampleAction"],
+    "tags": ["test", "test2"],
+    "details": {"key1": "value1", "key2": "value2"},
+    "entity": "test",
+    "priority": "P5"
+}
+"@
+
+# Send a POST request to Opsgenie API to create an alert
+$response = Invoke-RestMethod -Uri $apiEndpoint -Method Post -Headers @{
+    "Authorization" = "GenieKey $apiKey"
+    "Content-Type"  = "application/json"
+} -Body $alertData
+
+# Check if the alert was created successfully
+if ($response.status -eq "201") {
+    Write-Host "Alert created successfully. Alert ID: $($response.data.id)"
+} else {
+    Write-Host "Error creating alert. Status: $($response.status), Message: $($response.message)"
+}
